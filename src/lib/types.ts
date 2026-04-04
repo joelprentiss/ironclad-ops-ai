@@ -6,6 +6,7 @@ export type AgentDefinition = {
   panelLabel: string;
   summary: string;
   focus: string;
+  outcome: string;
 };
 
 export type ScenarioPreset = {
@@ -15,7 +16,15 @@ export type ScenarioPreset = {
 
 export type OutputSection = {
   title: string;
-  bullets: string[];
+  description?: string;
+  format?: "bullets" | "text";
+  bullets?: string[];
+  body?: string;
+};
+
+export type ResponseHighlight = {
+  label: string;
+  value: string;
 };
 
 export type AgentResponse = {
@@ -26,6 +35,7 @@ export type AgentResponse = {
   tradeContext: string;
   urgency: "Low" | "Medium" | "High";
   summary: string;
+  highlights: ResponseHighlight[];
   sections: OutputSection[];
   quickActions: string[];
   promptPlaceholder: string;
@@ -38,4 +48,3 @@ export type DemoStep = {
   agent: AgentId;
   scenario: string;
 };
-

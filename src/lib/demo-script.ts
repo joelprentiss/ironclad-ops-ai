@@ -3,35 +3,30 @@ import type { DemoStep } from "@/lib/types";
 export const AUTOPILOT_STEPS: DemoStep[] = [
   {
     id: "step-1",
-    title: "Step 1: Ops Triage",
-    note: "Show how the Virtual COO stabilizes a rough service day.",
+    title: "Step 1: Ops Recovery",
+    note: "Route a service-delivery problem into the operations playbook.",
     agent: "ops",
-    scenario:
-      "Two plumbers called out sick, the office is overbooked, and three urgent leak jobs are now pushing the afternoon schedule off track.",
+    scenario: "I run a plumbing business. Jobs are always late and customers are complaining.",
   },
   {
     id: "step-2",
-    title: "Step 2: Lead Recovery",
-    note: "Pivot from operations into revenue rescue with a fast follow-up plan.",
+    title: "Step 2: Lead Conversion",
+    note: "Turn a raw inquiry into a cleaner sales motion with message drafts.",
     agent: "sales",
-    scenario:
-      "A homeowner requested an estimate for a full repipe, but the team waited 18 hours to respond and the lead is cooling off.",
+    scenario: "Customer needs water heater installation. Wants a quote.",
   },
   {
     id: "step-3",
-    title: "Step 3: Marketing Angle",
-    note: "Turn a business gap into a campaign a small trade shop can launch this week.",
+    title: "Step 3: Local Marketing",
+    note: "Generate a campaign angle and ready-to-use marketing assets.",
     agent: "marketing",
-    scenario:
-      "Spring tune-up bookings are soft and we need a practical promotion for our HVAC maintenance plan without cheapening the brand.",
+    scenario: "Create content to attract more local plumbing customers.",
   },
   {
     id: "step-4",
-    title: "Step 4: Growth Lens",
-    note: "Close the demo with the highest-leverage growth recommendation.",
+    title: "Step 4: Growth Move",
+    note: "Finish with the next scale decision for an owner-operator business.",
     agent: "growth",
-    scenario:
-      "Revenue is steady but not climbing, referral volume is lumpy, and we need to choose the next best move for growth over the next month.",
+    scenario: "I'm making $120k/year working solo. What's next?",
   },
 ];
-

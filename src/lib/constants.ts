@@ -1,4 +1,4 @@
-import type { AgentDefinition, ScenarioPreset } from "@/lib/types";
+import type { AgentDefinition, AgentId, ScenarioPreset } from "@/lib/types";
 
 export const AGENT_DEFINITIONS: AgentDefinition[] = [
   {
@@ -7,6 +7,7 @@ export const AGENT_DEFINITIONS: AgentDefinition[] = [
     panelLabel: "Ops Agent",
     summary: "Stabilize crew, schedule, dispatch, and delivery risk.",
     focus: "Throughput, bottlenecks, customer friction",
+    outcome: "Root cause, same-day fix, SOP, efficiency gains",
   },
   {
     id: "sales",
@@ -14,6 +15,7 @@ export const AGENT_DEFINITIONS: AgentDefinition[] = [
     panelLabel: "Sales Agent",
     summary: "Tighten lead response, quoting, and follow-up execution.",
     focus: "Speed-to-lead, scripts, conversion next steps",
+    outcome: "Quote draft, SMS follow-up, objection handling, upsell",
   },
   {
     id: "marketing",
@@ -21,6 +23,7 @@ export const AGENT_DEFINITIONS: AgentDefinition[] = [
     panelLabel: "Marketing Agent",
     summary: "Turn a business challenge into a simple campaign angle.",
     focus: "Offer, channel mix, message clarity",
+    outcome: "Social post, short-form video, review response, SEO topic",
   },
   {
     id: "growth",
@@ -28,32 +31,35 @@ export const AGENT_DEFINITIONS: AgentDefinition[] = [
     panelLabel: "Growth Agent",
     summary: "Spot the highest-leverage growth move for the next 30 days.",
     focus: "Revenue levers, metrics, experiments",
+    outcome: "Pricing move, hiring guidance, revenue optimization, scale path",
   },
 ];
 
 export const DEFAULT_SCENARIO =
-  "Two techs called out, dispatch is behind, and three customers are already upset about late arrivals.";
+  "I run a plumbing business. Jobs are always late and customers are complaining.";
 
 export const STARTER_SCENARIOS: ScenarioPreset[] = [
   {
-    label: "Schedule Breakdown",
-    value:
-      "Two techs called out, dispatch is behind, and three customers are already upset about late arrivals.",
+    label: "Late Jobs",
+    value: "I run a plumbing business. Jobs are always late and customers are complaining.",
   },
   {
-    label: "Hot Lead Going Cold",
-    value:
-      "A homeowner asked for a quote on a full panel upgrade yesterday, but nobody has followed up and they are now shopping two competitors.",
+    label: "Water Heater Quote",
+    value: "Customer needs water heater installation. Wants a quote.",
   },
   {
-    label: "Slow Season Push",
-    value:
-      "Our HVAC installs are slower this month and we need a quick campaign to fill the board without discounting too aggressively.",
+    label: "Plumbing Marketing",
+    value: "Create content to attract more local plumbing customers.",
   },
   {
-    label: "Growth Plateau",
-    value:
-      "Revenue is flat, referral volume is inconsistent, and we do not know whether to invest next in lead gen, outbound follow-up, or tighter operations.",
+    label: "Solo Owner Growth",
+    value: "I'm making $120k/year working solo. What's next?",
   },
 ];
 
+export const EMPTY_AGENT_SCENARIOS: Record<AgentId, string> = {
+  ops: "I run a plumbing business. Jobs are always late and customers are complaining.",
+  sales: "Customer needs water heater installation. Wants a quote.",
+  marketing: "Create content to attract more local plumbing customers.",
+  growth: "I'm making $120k/year working solo. What's next?",
+};

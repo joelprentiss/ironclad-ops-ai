@@ -42,22 +42,27 @@ function EmptyState() {
     <div className="space-y-6">
       <div>
         <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-          Output Panel
+          Decision Workspace
         </p>
         <h2 className="font-display mt-2 text-2xl uppercase tracking-[0.08em] text-white">
-          Structured response will land here
+          Structured operating output will land here
         </h2>
       </div>
 
       <div className="rounded-[1.6rem] border border-dashed border-white/12 bg-black/10 p-6">
         <p className="text-sm leading-7 text-white/70">
-          Pick an agent or run Autopilot Demo to generate a clean operator-ready
-          output with a summary, priorities, action plan, and next moves.
+          Choose an agent or run Autopilot Demo to generate a serious operator-ready
+          response with a working draft, clear sections, and next actions.
         </p>
       </div>
 
       <div className="grid gap-3">
-        {["Situation Scan", "Action Plan", "Talk Track"].map((label) => (
+        {[
+          "Ops playbook and SOP",
+          "Sales quote and SMS draft",
+          "Marketing content assets",
+          "Growth scaling brief",
+        ].map((label) => (
           <div
             key={label}
             className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] px-4 py-4"
@@ -136,6 +141,22 @@ export function OutputPanel({
         </p>
       </header>
 
+      <div className="grid gap-3 md:grid-cols-3">
+        {response.highlights.map((highlight) => (
+          <div
+            key={highlight.label}
+            className="rounded-[1.3rem] border border-white/8 bg-black/[0.2] px-4 py-4"
+          >
+            <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
+              {highlight.label}
+            </p>
+            <p className="font-display mt-3 text-lg uppercase tracking-[0.06em] text-white">
+              {highlight.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
       <div className="grid gap-4">
         {response.sections.map((section, index) => (
           <SectionCard key={section.title} section={section} index={index} />
@@ -144,7 +165,7 @@ export function OutputPanel({
 
       <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
         <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-          Quick Actions
+          Suggested Next Actions
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {response.quickActions.map((action) => (
@@ -160,7 +181,7 @@ export function OutputPanel({
 
       <div className="rounded-[1.6rem] border border-white/10 bg-black/[0.16] p-5">
         <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-          Prompt Placeholder
+          Agent Prompt Placeholder
         </p>
         <p className="mt-3 text-sm leading-7 text-white/66">
           {response.promptPlaceholder}
