@@ -113,6 +113,15 @@ export function OutputPanel({
           <span className="rounded-full border border-[#cf6b2d]/35 bg-[#cf6b2d]/12 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-[#f1b585]">
             {response.agentLabel}
           </span>
+          <span
+            className={`rounded-full border px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.24em] ${
+              response.mode === "live"
+                ? "border-emerald-400/22 bg-emerald-400/10 text-emerald-200/80"
+                : "border-white/10 bg-white/[0.04] text-white/52"
+            }`}
+          >
+            {response.modeLabel}
+          </span>
           <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-white/50">
             {response.tradeContext}
           </span>

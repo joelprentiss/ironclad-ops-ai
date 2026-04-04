@@ -30,6 +30,8 @@ export type ResponseHighlight = {
 export type AgentResponse = {
   agent: AgentId;
   agentLabel: string;
+  mode: "live" | "demo";
+  modeLabel: string;
   title: string;
   subtitle: string;
   tradeContext: string;

@@ -1,7 +1,7 @@
 import type { AgentId, AgentResponse, OutputSection, ResponseHighlight } from "@/lib/types";
 import { compactText } from "@/lib/utils";
 
-const PROMPT_PLACEHOLDERS: Record<AgentId, string> = {
+export const PROMPT_PLACEHOLDERS: Record<AgentId, string> = {
   ops: "You are the Ironclad Ops Agent. Diagnose service-delivery issues for small trade businesses, then return the root cause, immediate fix, SOP, and efficiency improvements in operator-ready language.",
   sales:
     "You are the Ironclad Sales Agent. Turn a trade-business lead into a cleaner close motion with a quote message, text follow-up, objection handling, and a relevant upsell.",
@@ -11,7 +11,7 @@ const PROMPT_PLACEHOLDERS: Record<AgentId, string> = {
     "You are the Ironclad Growth Agent. Help a trade-business owner choose the next scaling move using pricing, hiring, margin improvement, and operational leverage.",
 };
 
-function detectTradeContext(scenario: string) {
+export function detectTradeContext(scenario: string) {
   if (/(pipe|drain|plumb|leak|repipe|water heater)/i.test(scenario)) {
     return "Plumbing business";
   }
@@ -31,7 +31,7 @@ function detectTradeContext(scenario: string) {
   return "Trade service business";
 }
 
-function detectUrgency(scenario: string): AgentResponse["urgency"] {
+export function detectUrgency(scenario: string): AgentResponse["urgency"] {
   if (/(late|complaining|urgent|angry|behind|missed|cooling off|overbooked)/i.test(scenario)) {
     return "High";
   }
@@ -118,6 +118,8 @@ function buildOpsResponse(
   return {
     agent: "ops",
     agentLabel: "Ops Agent",
+    mode: "demo",
+    modeLabel: "Demo Mode",
     title: "Ops Recovery Blueprint",
     subtitle: "Stop the drift, protect customer trust, and tighten the daily board.",
     tradeContext,
@@ -184,6 +186,8 @@ function buildSalesResponse(
   return {
     agent: "sales",
     agentLabel: "Sales Agent",
+    mode: "demo",
+    modeLabel: "Demo Mode",
     title: "Lead Conversion Pack",
     subtitle: "Turn a raw inquiry into a booked estimate and a stronger ticket.",
     tradeContext,
@@ -248,6 +252,8 @@ function buildMarketingResponse(
   return {
     agent: "marketing",
     agentLabel: "Marketing Agent",
+    mode: "demo",
+    modeLabel: "Demo Mode",
     title: "Local Marketing Kit",
     subtitle: "Build visibility with assets a small service business can actually ship.",
     tradeContext,
@@ -318,6 +324,8 @@ function buildGrowthResponse(
   return {
     agent: "growth",
     agentLabel: "Growth Agent",
+    mode: "demo",
+    modeLabel: "Demo Mode",
     title: "Owner Growth Brief",
     subtitle: "Turn solo income into a business that can actually scale.",
     tradeContext,

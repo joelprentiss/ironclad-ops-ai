@@ -13,7 +13,7 @@ Ironclad Ops AI is a competition-ready MVP for trade businesses that need fast, 
   - Growth Insights
 - Structured output panel
 - Scripted four-step Autopilot Demo
-- Mock agent responses behind a single API route
+- OpenAI-backed agent responses with automatic mock fallback
 
 ## Stack
 
@@ -33,16 +33,34 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000).
 
+## Environment variables
+
+Create a `.env.local` file in the project root:
+
+```bash
+OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-5.4-mini
+```
+
+`OPENAI_MODEL` is optional. If omitted, the app defaults to `gpt-5.4-mini`.
+
+## Live AI and fallback behavior
+
+- If `OPENAI_API_KEY` is present, the `/api/agent` route calls OpenAI and returns a structured live response.
+- If `OPENAI_API_KEY` is missing, the app automatically uses the existing local mock generators.
+- If the OpenAI request fails or times out, the route falls back to the local mock response cleanly so the UI and Autopilot Demo still work.
+
 ## Key files
 
 - `src/app/page.tsx`: app entry
 - `src/components/app-shell.tsx`: main interactive experience
 - `src/app/api/agent/route.ts`: demo response endpoint
+- `src/lib/live-agent.ts`: OpenAI integration and structured response shaping
 - `src/lib/mock-agents.ts`: placeholder agent logic
 - `src/lib/demo-script.ts`: scripted four-step demo
 
 ## How to extend
 
-1. Replace the mock response builder in `src/lib/mock-agents.ts` with real LLM orchestration.
+1. Tune the agent prompts in `src/lib/live-agent.ts`.
 2. Keep the `POST /api/agent` contract stable so the UI does not need to change.
-3. Add richer response schemas agent by agent once the demo flow is locked.
+3. Adjust model selection with `OPENAI_MODEL` if you want a different latency/cost tradeoff.

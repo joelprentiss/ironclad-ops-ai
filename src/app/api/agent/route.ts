@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { buildMockResponse } from "@/lib/mock-agents";
+import { generateAgentResponse } from "@/lib/live-agent";
 import type { AgentId } from "@/lib/types";
-import { wait } from "@/lib/utils";
 
 type AgentRequest = {
   agent?: string;
@@ -29,7 +28,7 @@ export async function POST(request: Request) {
     );
   }
 
-  await wait(500);
-
-  return NextResponse.json(buildMockResponse(agent as AgentId, scenario));
+  return NextResponse.json(
+    await generateAgentResponse(agent as AgentId, scenario),
+  );
 }

@@ -130,6 +130,12 @@ export function AppShell() {
         return;
       }
 
+      setHelperText(
+        nextResponse.mode === "live"
+          ? `${agentDefinition.panelLabel} used Live AI for this response.`
+          : `${agentDefinition.panelLabel} is running in Demo Mode using the local fallback.`,
+      );
+
       startTransition(() => {
         setActiveAgent(agent);
         setResponse(nextResponse);
@@ -183,6 +189,12 @@ export function AppShell() {
         if (token !== runTokenRef.current) {
           return;
         }
+
+        setHelperText(
+          nextResponse.mode === "live"
+            ? `${step.title} completed with Live AI.`
+            : `${step.title} completed in Demo Mode using the local fallback.`,
+        );
 
         startTransition(() => {
           setResponse(nextResponse);
