@@ -338,17 +338,12 @@ function buildGrowthResponse(
 export function buildMockResponse(agent: AgentId, scenario: string): AgentResponse {
   const tradeContext = detectTradeContext(scenario);
   const urgency = detectUrgency(scenario);
+  const responseBuilders: Record<AgentId, () => AgentResponse> = {
+    ops: () => buildOpsResponse(scenario, tradeContext, urgency),
+    sales: () => buildSalesResponse(scenario, tradeContext, urgency),
+    marketing: () => buildMarketingResponse(scenario, tradeContext, urgency),
+    growth: () => buildGrowthResponse(scenario, tradeContext, urgency),
+  };
 
-  switch (agent) {
-    case "ops":
-      return buildOpsResponse(scenario, tradeContext, urgency);
-    case "sales":
-      return buildSalesResponse(scenario, tradeContext, urgency);
-    case "marketing":
-      return buildMarketingResponse(scenario, tradeContext, urgency);
-    case "growth":
-      return buildGrowthResponse(scenario, tradeContext, urgency);
-    default:
-      return buildOpsResponse(scenario, tradeContext, urgency);
-  }
+  return responseBuilders[agent]();
 }
