@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  --ink-950: #070a0d;
+  --ink-900: #0c1116;
+  --ink-800: #141c24;
+  --steel-500: #708090;
+  --sand-100: #eff1ee;
+  --rust-500: #cf6b2d;
+  --rust-400: #e28849;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink-950);
+  color: var(--sand-100);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--sand-100);
+  font-family: var(--font-body), sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(207, 107, 45, 0.22), transparent 34%),
+    linear-gradient(180deg, #10161c 0%, #080b0f 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 100%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.18) 0 1px,
+      transparent 1px 8px
+    );
+  mix-blend-mode: soft-light;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+textarea {
+  resize: none;
+}
+
+::selection {
+  background: rgba(226, 136, 73, 0.3);
+  color: white;
+}
+
+.font-display {
+  font-family: var(--font-display), sans-serif;
+}
+
+.panel-surface {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+    rgba(8, 11, 15, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 28px 80px rgba(0, 0, 0, 0.34);
+}
+
+.status-dot {
+  box-shadow: 0 0 18px rgba(226, 136, 73, 0.45);
+}
+
