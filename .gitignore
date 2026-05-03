@@ -8,3 +8,13 @@ coverage
 .env
 .env.local
 .env.*.local
+
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+
+!.env.example
