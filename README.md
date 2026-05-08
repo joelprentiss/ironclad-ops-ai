@@ -1,19 +1,29 @@
-# Ironclad Ops AI
+# Ironclad AI / Ironclad Ops
 
-Ironclad Ops AI is a competition-ready MVP for trade businesses that need fast, structured operational help. This scaffold focuses on demo quality over enterprise complexity: one polished screen, four focused agents, and a scripted Autopilot Demo.
+Ironclad AI is a focused missed-call recovery and lead follow-up audit for local trades businesses. The app is intentionally narrow: a shop owner explains how inbound calls, voicemails, web leads, and quote requests are handled today, then gets a concise mini-deliverable back.
+
+The product story is:
+
+- `Ironclad AI`: free diagnostic + template generator
+- `Ironclad Ops`: done-for-you implementation service
 
 ## What is included
 
 - Single-page Next.js app
-- Scenario input with quick-start examples
-- Four agent actions:
-  - Analyze Ops
-  - Handle Lead
-  - Create Marketing
-  - Growth Insights
-- Structured output panel
-- Scripted four-step Autopilot Demo
-- OpenAI-backed agent responses with automatic mock fallback
+- Buyer-journey flow:
+  - identify the problem
+  - enter quick business context
+  - receive diagnostic + template output
+  - choose the next step
+- Structured output with:
+  - likely revenue leaks
+  - likely operational weaknesses
+  - fix-this-first scorecard
+  - missed-call text-back script
+  - 3-message follow-up sequence
+  - quote or review templates where relevant
+  - Ironclad Ops implementation CTA
+- OpenAI-backed diagnostic responses with automatic mock fallback
 
 ## Stack
 
@@ -46,21 +56,48 @@ OPENAI_MODEL=gpt-5.4-mini
 
 ## Live AI and fallback behavior
 
-- If `OPENAI_API_KEY` is present, the `/api/agent` route calls OpenAI and returns a structured live response.
-- If `OPENAI_API_KEY` is missing, the app automatically uses the existing local mock generators.
-- If the OpenAI request fails or times out, the route falls back to the local mock response cleanly so the UI and Autopilot Demo still work.
+- If `OPENAI_API_KEY` is present, the `/api/diagnose` route calls OpenAI and returns a structured live response.
+- If `OPENAI_API_KEY` is missing, the app automatically uses the local mock diagnostics.
+- If the OpenAI request fails or times out, the route falls back to local template responses so the buyer journey still works.
+
+## Diagnostic request contract
+
+The canonical `POST /api/diagnose` payload is now structured around business context:
+
+```json
+{
+  "trade": "plumbing",
+  "problemType": "missed_calls",
+  "businessSize": "small_team",
+  "currentProcess": "Missed calls go to voicemail and web leads are checked the next morning.",
+  "goal": "Book more jobs from the calls and leads we already get.",
+  "contactIntent": "undecided"
+}
+```
+
+Migration notes:
+
+- New clients should send `trade`, `problemType`, `businessSize`, `currentProcess`, `goal`, and optional `contactIntent`.
+- The route still accepts the old `problemId`, `tradeId`, and `scenario` shape and normalizes it internally.
+- Legacy requests default to `businessSize: "small_team"`, `goal: "Book more jobs from the calls and leads we already get."`, and no contact intent.
+- The older `/api/agent` compatibility route still exists, but it now maps into the structured diagnostic payload.
 
 ## Key files
 
-- `src/app/page.tsx`: app entry
-- `src/components/app-shell.tsx`: main interactive experience
-- `src/app/api/agent/route.ts`: demo response endpoint
-- `src/lib/live-agent.ts`: OpenAI integration and structured response shaping
-- `src/lib/mock-agents.ts`: placeholder agent logic
-- `src/lib/demo-script.ts`: scripted four-step demo
+- `src/components/app-shell.tsx`: main missed-call audit funnel
+- `src/components/problem-actions.tsx`: featured audit entry point
+- `src/components/scenario-input.tsx`: structured business context form
+- `src/components/buyer-journey-steps.tsx`: four-stage buyer journey progress
+- `src/components/post-audit-conversion.tsx`: next-step capture layer after value is delivered
+- `src/app/api/diagnose/route.ts`: primary diagnostic endpoint
+- `src/app/api/lead-capture/route.ts`: placeholder lead capture endpoint
+- `src/lib/live-diagnostics.ts`: OpenAI integration and focused audit response shaping
+- `src/lib/mock-diagnostics.ts`: local fallback responses
+- `src/lib/constants.ts`: featured audit definitions and presets
 
 ## How to extend
 
-1. Tune the agent prompts in `src/lib/live-agent.ts`.
-2. Keep the `POST /api/agent` contract stable so the UI does not need to change.
-3. Adjust model selection with `OPENAI_MODEL` if you want a different latency/cost tradeoff.
+1. Tune the primary missed-call and follow-up audit in `src/lib/constants.ts`.
+2. Tighten the audit prompt in `src/lib/live-diagnostics.ts`.
+3. Keep the `POST /api/diagnose` contract stable so the UI stays simple.
+4. Remove the legacy `/api/agent` compatibility route once nothing depends on it.

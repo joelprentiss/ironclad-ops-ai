@@ -1,130 +1,176 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { AgentActions } from "@/components/agent-actions";
-import { AutopilotDemo } from "@/components/autopilot-demo";
 import { BrandMark } from "@/components/brand-mark";
 import { OutputPanel } from "@/components/output-panel";
+import { ProblemActions } from "@/components/problem-actions";
 import { ScenarioInput } from "@/components/scenario-input";
 import {
-  AGENT_DEFINITIONS,
-  DEFAULT_SCENARIO,
-  EMPTY_AGENT_SCENARIOS,
+  BUSINESS_SIZE_OPTIONS,
+  DEFAULT_BUSINESS_SIZE,
+  DEFAULT_DIAGNOSTIC_GOAL,
+  DEFAULT_PROBLEM_ID,
+  DEFAULT_TRADE_ID,
+  FEATURED_PROBLEM_DEFINITIONS,
   STARTER_SCENARIOS,
+  TRADE_DEFINITIONS,
+  getTradeDefinition,
+  getTradeFallbackScenario,
 } from "@/lib/constants";
-import { AUTOPILOT_STEPS } from "@/lib/demo-script";
-import type { AgentDefinition, AgentId, AgentResponse } from "@/lib/types";
-import { wait } from "@/lib/utils";
+import type {
+  BusinessDiagnosticPayload,
+  BusinessSize,
+  DiagnosticResponse,
+  ProblemId,
+  ScenarioPreset,
+  TradeId,
+} from "@/lib/types";
 
-type DemoStatus = "idle" | "running" | "complete";
+const HERO_PILLS = ["Missed calls", "Slow follow-up", "Lost jobs"];
 
-const HERO_PILLS = ["Practical", "High-trust", "Trade-ready", "Demo-quality"];
-const PLATFORM_PROMISES = [
-  {
-    label: "What the owner sees",
-    value: "One problem in, one clear response out.",
-  },
-  {
-    label: "What the demo proves",
-    value: "Four specialized agents with different outputs.",
-  },
-  {
-    label: "What stays lean",
-    value: "No auth, no CRM, no backend complexity yet.",
-  },
-];
-
-async function fetchAgentResponse(agent: AgentId, scenario: string) {
-  const response = await fetch("/api/agent", {
+async function fetchDiagnosticResponse(
+  payload: BusinessDiagnosticPayload,
+) {
+  const response = await fetch("/api/diagnose", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ agent, scenario }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
     const error = (await response.json()) as { error?: string };
-    throw new Error(error.error ?? "Something went wrong while generating the response.");
+    throw new Error(error.error ?? "Something went wrong while generating the plan.");
   }
 
-  return (await response.json()) as AgentResponse;
-}
-
-function getAgentDefinition(agent: AgentId): AgentDefinition {
-  return AGENT_DEFINITIONS.find((item) => item.id === agent) ?? AGENT_DEFINITIONS[0];
+  return (await response.json()) as DiagnosticResponse;
 }
 
 export function AppShell() {
-  const [scenario, setScenario] = useState(DEFAULT_SCENARIO);
-  const [response, setResponse] = useState<AgentResponse | null>(null);
-  const [activeAgent, setActiveAgent] = useState<AgentId | null>("ops");
+  const [scenario, setScenario] = useState("");
+  const [businessSize, setBusinessSize] =
+    useState<BusinessSize>(DEFAULT_BUSINESS_SIZE);
+  const [goal, setGoal] = useState(DEFAULT_DIAGNOSTIC_GOAL);
+  const [selectedTrade, setSelectedTrade] = useState<TradeId>(DEFAULT_TRADE_ID);
+  const [response, setResponse] = useState<DiagnosticResponse | null>(null);
+  const [activeProblem, setActiveProblem] = useState<ProblemId | null>(DEFAULT_PROBLEM_ID);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loadingLabel, setLoadingLabel] = useState<string | null>(null);
   const [helperText, setHelperText] = useState<string | null>(
-    "Start with a real issue or use one of the demo prompts below.",
+    "Start with the leak, then add a few details about how calls and leads move through the shop.",
   );
-  const [demoStatus, setDemoStatus] = useState<DemoStatus>("idle");
-  const [demoIndex, setDemoIndex] = useState(-1);
   const runTokenRef = useRef(0);
+  const inputRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
 
   const isLoading = loadingLabel !== null;
-  const currentStep = demoIndex >= 0 ? AUTOPILOT_STEPS[demoIndex] : null;
-  const activeAgentDefinition = activeAgent ? getAgentDefinition(activeAgent) : null;
-  const isAutopilotRunning = demoStatus === "running";
+  const selectedTradeDefinition = getTradeDefinition(selectedTrade);
 
-  const cancelActiveRun = () => {
+  const invalidatePendingResult = () => {
     runTokenRef.current += 1;
     setLoadingLabel(null);
-    setDemoStatus("idle");
-    setDemoIndex(-1);
-    setHelperText("Autopilot stopped. You can now run any agent manually.");
+    setResponse(null);
   };
 
   const handleScenarioChange = (value: string) => {
-    if (demoStatus === "running") {
-      cancelActiveRun();
-    }
-
+    invalidatePendingResult();
     setScenario(value);
     setErrorMessage(null);
-    setHelperText("Manual mode. Pick the agent that matches the problem you want to solve.");
+    setHelperText(
+      `Add the real callback and follow-up process your ${selectedTradeDefinition.label.toLowerCase()} shop uses today.`,
+    );
   };
 
-  const handlePresetSelect = (value: string) => {
-    if (demoStatus === "running") {
-      cancelActiveRun();
+  const handleGoalChange = (value: string) => {
+    invalidatePendingResult();
+    setGoal(value);
+    setErrorMessage(null);
+    setHelperText("Goal updated. The plan will aim the templates at that outcome.");
+  };
+
+  const handleBusinessSizeSelect = (nextBusinessSize: BusinessSize) => {
+    invalidatePendingResult();
+    setBusinessSize(nextBusinessSize);
+    setErrorMessage(null);
+    setHelperText(
+      "Business size updated. The plan will adjust ownership and handoff rules.",
+    );
+  };
+
+  const handleTradeSelect = (tradeId: TradeId) => {
+    invalidatePendingResult();
+    const trade = getTradeDefinition(tradeId);
+
+    setSelectedTrade(tradeId);
+    setErrorMessage(null);
+    setHelperText(
+      `${trade.label} selected. The plan will tailor scripts and follow-up rules to ${trade.focus.toLowerCase()}.`,
+    );
+  };
+
+  const handlePresetSelect = (preset: ScenarioPreset) => {
+    invalidatePendingResult();
+    setScenario(preset.value);
+
+    if (preset.problemId) {
+      setActiveProblem(preset.problemId);
     }
 
-    setScenario(value);
+    if (preset.tradeId) {
+      setSelectedTrade(preset.tradeId);
+    }
+
     setErrorMessage(null);
-    setHelperText("Starter scenario loaded. Choose an agent to generate a focused response.");
+    setHelperText("Example context loaded. Get the plan to see the fix and templates.");
   };
 
-  const handleAgentRun = async (agent: AgentId, nextScenario = scenario) => {
-    const fallbackScenario = EMPTY_AGENT_SCENARIOS[agent];
-    const trimmedScenario = nextScenario.trim();
+  const handleProblemSelect = (problemId: ProblemId) => {
+    invalidatePendingResult();
+
+    setActiveProblem(problemId);
+    setErrorMessage(null);
+    setHelperText("Good. Now add a few details about how calls and leads are handled.");
+  };
+
+  const scrollToInput = () => {
+    inputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleGenerateDiagnostic = async () => {
+    const problemId = activeProblem ?? DEFAULT_PROBLEM_ID;
+    const fallbackScenario = getTradeFallbackScenario(selectedTrade);
+    const trimmedScenario = scenario.trim();
     const resolvedScenario = trimmedScenario || fallbackScenario;
-    const agentDefinition = getAgentDefinition(agent);
+    const resolvedGoal = goal.trim() || DEFAULT_DIAGNOSTIC_GOAL;
+    const tradeDefinition = getTradeDefinition(selectedTrade);
     const token = ++runTokenRef.current;
+
+    setActiveProblem(problemId);
+    setErrorMessage(null);
+    setResponse(null);
+    setLoadingLabel(`${tradeDefinition.label} plan`);
 
     if (!trimmedScenario) {
       setScenario(fallbackScenario);
       setHelperText(
-        `No input was entered, so ${agentDefinition.panelLabel} loaded a demo-ready example automatically.`,
+        `No context was entered, so a realistic ${tradeDefinition.label.toLowerCase()} scenario was used.`,
       );
     } else {
-      setHelperText(`${agentDefinition.panelLabel} is building an operator-ready response.`);
+      setHelperText(
+        `Building a ${tradeDefinition.label.toLowerCase()} plan from your notes.`,
+      );
     }
 
-    setErrorMessage(null);
-    setDemoStatus("idle");
-    setDemoIndex(-1);
-    setLoadingLabel(agentDefinition.buttonLabel);
-
     try {
-      const nextResponse = await fetchAgentResponse(agent, resolvedScenario);
+      const nextResponse = await fetchDiagnosticResponse({
+        trade: selectedTrade,
+        problemType: problemId,
+        businessSize,
+        currentProcess: resolvedScenario,
+        goal: resolvedGoal,
+        contactIntent: "undecided",
+      });
 
       if (token !== runTokenRef.current) {
         return;
@@ -132,12 +178,11 @@ export function AppShell() {
 
       setHelperText(
         nextResponse.mode === "live"
-          ? `${agentDefinition.panelLabel} used Live AI for this response.`
-          : `${agentDefinition.panelLabel} is running in Demo Mode using the local fallback.`,
+          ? "Plan ready. Choose whether to send it, get templates, or have Ironclad Ops build it."
+          : "Plan ready using built-in templates. Choose the next step below the output.",
       );
 
       startTransition(() => {
-        setActiveAgent(agent);
         setResponse(nextResponse);
       });
     } catch (error) {
@@ -148,11 +193,11 @@ export function AppShell() {
       const message =
         error instanceof Error
           ? error.message
-          : "The request failed before the demo output was generated.";
+          : "The request failed before the plan was generated.";
 
       setErrorMessage(message);
       setResponse(null);
-      setHelperText("The response failed. Adjust the prompt or rerun the agent.");
+      setHelperText("The plan failed. Adjust the context or run it again.");
     } finally {
       if (token === runTokenRef.current) {
         setLoadingLabel(null);
@@ -160,82 +205,15 @@ export function AppShell() {
     }
   };
 
-  const handleAutopilot = async () => {
-    const token = ++runTokenRef.current;
-    setErrorMessage(null);
-    setResponse(null);
-    setDemoStatus("running");
-    setHelperText("Autopilot is stepping through the full four-agent demo sequence.");
-
-    for (const [index, step] of AUTOPILOT_STEPS.entries()) {
-      if (token !== runTokenRef.current) {
-        return;
-      }
-
-      const nextAgentDefinition = getAgentDefinition(step.agent);
-
-      setDemoIndex(index);
-      setLoadingLabel(step.title);
-      setHelperText(`${step.title} is routing through ${nextAgentDefinition.panelLabel}.`);
-
-      startTransition(() => {
-        setScenario(step.scenario);
-        setActiveAgent(step.agent);
-      });
-
-      try {
-        const nextResponse = await fetchAgentResponse(step.agent, step.scenario);
-
-        if (token !== runTokenRef.current) {
-          return;
-        }
-
-        setHelperText(
-          nextResponse.mode === "live"
-            ? `${step.title} completed with Live AI.`
-            : `${step.title} completed in Demo Mode using the local fallback.`,
-        );
-
-        startTransition(() => {
-          setResponse(nextResponse);
-        });
-      } catch (error) {
-        if (token !== runTokenRef.current) {
-          return;
-        }
-
-        const message =
-          error instanceof Error
-            ? error.message
-            : "The Autopilot Demo could not finish.";
-
-        setErrorMessage(message);
-        setResponse(null);
-        setLoadingLabel(null);
-        setDemoStatus("idle");
-        setHelperText("Autopilot hit an error. Rerun the sequence or use manual mode.");
-        return;
-      }
-
-      await wait(850);
-    }
-
-    if (token === runTokenRef.current) {
-      setLoadingLabel(null);
-      setDemoStatus("complete");
-      setHelperText("Autopilot complete. The final Growth brief is ready to present.");
-    }
-  };
-
   return (
     <main className="relative overflow-hidden">
-      <div className="mx-auto min-h-screen max-w-[1480px] px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <section className="panel-surface relative isolate overflow-hidden rounded-[2.4rem] p-5 sm:p-7 lg:p-8">
+      <div className="mx-auto min-h-screen max-w-5xl px-3 py-3 sm:px-6 lg:px-8 lg:py-6">
+        <section className="panel-surface relative isolate overflow-hidden rounded-[1.8rem] p-4 sm:rounded-[2.2rem] sm:p-7 lg:p-8">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-52 bg-[radial-gradient(circle_at_top,_rgba(226,136,73,0.24),_transparent_60%)]" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent)]" />
 
-          <header className="grid gap-10 border-b border-white/8 pb-8 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-7">
+          <header className="relative border-b border-white/8 pb-7 sm:pb-8">
+            <div className="max-w-3xl space-y-6">
               <BrandMark />
 
               <div className="flex flex-wrap gap-2">
@@ -251,152 +229,90 @@ export function AppShell() {
 
               <div className="max-w-4xl">
                 <p className="text-[0.72rem] uppercase tracking-[0.32em] text-[#f1b585]/74">
-                  AI operating system for the trades
+                  Free missed-call and follow-up check
                 </p>
-                <h2 className="font-display mt-4 text-5xl uppercase leading-[0.92] tracking-[0.05em] text-white sm:text-6xl xl:text-7xl">
-                  Turn messy field problems into clear next moves.
+                <h2 className="font-display mt-4 text-4xl uppercase leading-[0.96] tracking-[0.05em] text-white sm:text-5xl lg:text-6xl">
+                  Stop losing jobs after the first missed call.
                 </h2>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
-                  Built for plumbers, electricians, HVAC teams, and owner-operators
-                  who need practical answers fast. Ironclad routes the problem to the
-                  right agent and returns an output you can actually use.
+                <p className="mt-5 max-w-2xl text-base leading-7 text-white/68">
+                  Tell Ironclad what happens when a customer calls, leaves a voicemail,
+                  or asks for a quote. Get a plain-English fix, text-back script, and
+                  follow-up templates you can use today.
                 </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 self-start">
-              <div className="rounded-[1.8rem] border border-white/8 bg-black/[0.18] p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[0.7rem] uppercase tracking-[0.28em] text-white/42">
-                    Demo Build
-                  </span>
-                  <span className="rounded-full border border-emerald-400/20 bg-emerald-400/8 px-3 py-1 text-[0.7rem] uppercase tracking-[0.22em] text-emerald-200/75">
-                    MVP Stage Two
-                  </span>
-                </div>
-                <div className="mt-4 grid gap-4">
-                  {PLATFORM_PROMISES.map((item) => (
-                    <div key={item.label} className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
-                      <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
-                        {item.label}
-                      </p>
-                      <p className="mt-3 text-sm leading-6 text-white/74">{item.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
-                  <p className="font-display text-lg uppercase tracking-[0.08em] text-white">
-                    4 Agents
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={scrollToInput}
+                    className="min-h-12 rounded-full border border-[#cf6b2d]/45 bg-[#cf6b2d]/18 px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#f1b585] transition hover:bg-[#cf6b2d]/24 hover:text-white"
+                  >
+                    Find my revenue leaks
+                  </button>
+                  <p className="text-sm leading-6 text-white/52">
+                    Takes about two minutes. No signup to see the result.
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-white/66">Ops, sales, marketing, growth.</p>
-                </div>
-                <div className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
-                  <p className="font-display text-lg uppercase tracking-[0.08em] text-white">
-                    1 Screen
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-white/66">Built for a fast, founder-led live demo.</p>
-                </div>
-                <div className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
-                  <p className="font-display text-lg uppercase tracking-[0.08em] text-white">
-                    Local Mock
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-white/66">Looks functional now, stays easy to extend later.</p>
                 </div>
               </div>
             </div>
           </header>
 
-          <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-            <div className="space-y-6">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.5rem] border border-white/8 bg-black/[0.18] p-4">
-                  <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
-                    Current lane
-                  </p>
-                  <p className="font-display mt-3 text-xl uppercase tracking-[0.08em] text-white">
-                    {activeAgentDefinition?.panelLabel ?? "Select agent"}
-                  </p>
-                </div>
-                <div className="rounded-[1.5rem] border border-white/8 bg-black/[0.18] p-4">
-                  <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
-                    Mode
-                  </p>
-                  <p className="font-display mt-3 text-xl uppercase tracking-[0.08em] text-white">
-                    {isAutopilotRunning ? "Autopilot" : "Manual"}
-                  </p>
-                </div>
-                <div className="rounded-[1.5rem] border border-white/8 bg-black/[0.18] p-4">
-                  <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
-                    Output
-                  </p>
-                  <p className="mt-3 text-sm leading-6 text-white/74">
-                    {activeAgentDefinition?.outcome ?? "Structured operating response"}
-                  </p>
-                </div>
-              </div>
+          <div ref={inputRef} className="mx-auto mt-7 max-w-3xl space-y-5 sm:mt-8 sm:space-y-6">
+            <ProblemActions
+              problems={FEATURED_PROBLEM_DEFINITIONS}
+              activeProblem={activeProblem}
+              disabled={isLoading}
+              onSelect={handleProblemSelect}
+            />
 
-              <ScenarioInput
-                value={scenario}
-                onChange={handleScenarioChange}
-                onSelectPreset={handlePresetSelect}
-                presets={STARTER_SCENARIOS}
-                disabled={isLoading}
-                helperText={helperText}
-              />
+            <ScenarioInput
+              value={scenario}
+              goal={goal}
+              businessSize={businessSize}
+              selectedTrade={selectedTrade}
+              trades={TRADE_DEFINITIONS}
+              businessSizes={BUSINESS_SIZE_OPTIONS}
+              onChange={handleScenarioChange}
+              onGoalChange={handleGoalChange}
+              onSelectBusinessSize={handleBusinessSizeSelect}
+              onSelectTrade={handleTradeSelect}
+              onSelectPreset={handlePresetSelect}
+              onSubmit={handleGenerateDiagnostic}
+              presets={STARTER_SCENARIOS}
+              disabled={isLoading}
+              isSubmitting={isLoading}
+              helperText={helperText}
+            />
 
-              <AgentActions
-                agents={AGENT_DEFINITIONS}
-                activeAgent={activeAgent}
-                disabled={isLoading}
-                onRun={handleAgentRun}
-              />
-
-              <AutopilotDemo
-                steps={AUTOPILOT_STEPS}
-                activeIndex={demoIndex}
-                status={demoStatus}
-                disabled={isLoading}
-                onRun={handleAutopilot}
-                onStop={cancelActiveRun}
-              />
-            </div>
-
-            <aside className="panel-surface rounded-[2rem] p-6 lg:p-7">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/8 bg-black/[0.18] px-4 py-4">
+            <section className="panel-surface rounded-[1.6rem] p-4 sm:p-5 lg:p-6">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.2rem] border border-white/8 bg-black/[0.18] px-4 py-4">
                 <div>
                   <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
-                    Workspace status
+                    Result
                   </p>
                   <p className="mt-2 text-sm leading-6 text-white/74">
-                    {helperText ?? "Ready for the next scenario."}
+                    {helperText ?? "Ready when you are."}
                   </p>
                 </div>
                 <span
                   className={`rounded-full border px-3 py-1 text-[0.68rem] uppercase tracking-[0.22em] ${
-                    isAutopilotRunning
-                      ? "border-[#cf6b2d]/40 bg-[#cf6b2d]/12 text-[#f1b585]"
-                      : "border-white/10 bg-white/[0.04] text-white/52"
+                    response
+                      ? "border-emerald-400/20 bg-emerald-400/8 text-emerald-200/75"
+                      : isLoading
+                        ? "border-[#cf6b2d]/40 bg-[#cf6b2d]/12 text-[#f1b585]"
+                        : "border-white/10 bg-white/[0.04] text-white/52"
                   }`}
                 >
-                  {isAutopilotRunning ? "Sequence live" : "Ready"}
+                  {response ? "Next step ready" : isLoading ? "Building" : "Ready"}
                 </span>
               </div>
 
               <OutputPanel
                 response={response}
+                scenario={scenario}
                 isLoading={isLoading}
                 loadingLabel={loadingLabel}
                 errorMessage={errorMessage}
-                currentStepTitle={
-                  demoStatus === "running" || demoStatus === "complete"
-                    ? currentStep?.title ?? null
-                    : null
-                }
               />
-            </aside>
+            </section>
           </div>
         </section>
       </div>

@@ -1,12 +1,13 @@
+import { PostAuditConversion } from "@/components/post-audit-conversion";
 import { SectionCard } from "@/components/section-card";
-import type { AgentResponse } from "@/lib/types";
+import type { DiagnosticResponse } from "@/lib/types";
 
 type OutputPanelProps = {
-  response: AgentResponse | null;
+  response: DiagnosticResponse | null;
+  scenario: string;
   isLoading: boolean;
   loadingLabel: string | null;
   errorMessage: string | null;
-  currentStepTitle: string | null;
 };
 
 function LoadingState({ loadingLabel }: { loadingLabel: string | null }) {
@@ -14,10 +15,10 @@ function LoadingState({ loadingLabel }: { loadingLabel: string | null }) {
     <div className="space-y-5">
       <div>
         <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-          Processing
+          Building your plan
         </p>
         <h2 className="font-display mt-2 text-2xl uppercase tracking-[0.08em] text-white">
-          {loadingLabel ?? "Building response"}
+          {loadingLabel ?? "Generating call and lead plan"}
         </h2>
       </div>
       <div className="space-y-4">
@@ -42,26 +43,26 @@ function EmptyState() {
     <div className="space-y-6">
       <div>
         <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-          Decision Workspace
+          Your plan
         </p>
         <h2 className="font-display mt-2 text-2xl uppercase tracking-[0.08em] text-white">
-          Structured operating output will land here
+          The fix and templates will land here
         </h2>
       </div>
 
       <div className="rounded-[1.6rem] border border-dashed border-white/12 bg-black/10 p-6">
         <p className="text-sm leading-7 text-white/70">
-          Choose an agent or run Autopilot Demo to generate a serious operator-ready
-          response with a working draft, clear sections, and next actions.
+          Pick the problem, add quick context, then generate a practical plan with
+          copy-ready text-back and follow-up templates.
         </p>
       </div>
 
       <div className="grid gap-3">
         {[
-          "Ops playbook and SOP",
-          "Sales quote and SMS draft",
-          "Marketing content assets",
-          "Growth scaling brief",
+          "What's leaking",
+          "What to fix first",
+          "Suggested text-back message",
+          "Suggested follow-up sequence",
         ].map((label) => (
           <div
             key={label}
@@ -79,10 +80,10 @@ function EmptyState() {
 
 export function OutputPanel({
   response,
+  scenario,
   isLoading,
   loadingLabel,
   errorMessage,
-  currentStepTitle,
 }: OutputPanelProps) {
   if (isLoading) {
     return <LoadingState loadingLabel={loadingLabel} />;
@@ -95,7 +96,7 @@ export function OutputPanel({
           Request Error
         </p>
         <h2 className="font-display text-2xl uppercase tracking-[0.08em] text-white">
-          The response could not be generated
+          The plan could not be generated
         </h2>
         <p className="text-sm leading-7 text-white/75">{errorMessage}</p>
       </div>
@@ -111,7 +112,7 @@ export function OutputPanel({
       <header className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="rounded-full border border-[#cf6b2d]/35 bg-[#cf6b2d]/12 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-[#f1b585]">
-            {response.agentLabel}
+            {response.problemLabel}
           </span>
           <span
             className={`rounded-full border px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.24em] ${
@@ -120,7 +121,10 @@ export function OutputPanel({
                 : "border-white/10 bg-white/[0.04] text-white/52"
             }`}
           >
-            {response.modeLabel}
+            {response.mode === "live" ? "Live plan" : "Ready-made plan"}
+          </span>
+          <span className="rounded-full border border-[#cf6b2d]/25 bg-[#cf6b2d]/10 px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-[#f1b585]">
+            {response.tradeLabel}
           </span>
           <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-white/50">
             {response.tradeContext}
@@ -128,15 +132,10 @@ export function OutputPanel({
           <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-white/50">
             {response.urgency} urgency
           </span>
-          {currentStepTitle ? (
-            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/8 px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-emerald-200/75">
-              {currentStepTitle}
-            </span>
-          ) : null}
         </div>
         <div>
           <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-            Agent Output
+            Your leak report
           </p>
           <h2 className="font-display mt-2 text-3xl uppercase tracking-[0.08em] text-white">
             {response.title}
@@ -174,7 +173,7 @@ export function OutputPanel({
 
       <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
         <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-          Suggested Next Actions
+          Fix this first
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {response.quickActions.map((action) => (
@@ -188,14 +187,7 @@ export function OutputPanel({
         </div>
       </div>
 
-      <div className="rounded-[1.6rem] border border-white/10 bg-black/[0.16] p-5">
-        <p className="text-[0.72rem] uppercase tracking-[0.32em] text-white/40">
-          Agent Prompt Placeholder
-        </p>
-        <p className="mt-3 text-sm leading-7 text-white/66">
-          {response.promptPlaceholder}
-        </p>
-      </div>
+      <PostAuditConversion response={response} scenario={scenario} />
     </div>
   );
 }

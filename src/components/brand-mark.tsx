@@ -14,13 +14,12 @@ export function BrandMark() {
       </div>
       <div>
         <p className="text-[0.7rem] uppercase tracking-[0.32em] text-white/45">
-          Ironclad Systems
+          Ironclad AI
         </p>
         <h1 className="font-display text-2xl uppercase tracking-[0.1em] text-white">
-          Ironclad Ops AI
+          Ironclad Ops
         </h1>
       </div>
     </div>
   );
 }
-

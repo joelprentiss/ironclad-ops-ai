@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ironclad Ops AI",
+  title: "Ironclad AI | Find the Leak, Get the Fix",
   description:
-    "A gritty, demo-ready AI operating system for trade business owners.",
+    "A practical tool that helps local trades businesses find missed-call and follow-up leaks, get templates, and choose the next step.",
 };
 
 export default function RootLayout({
