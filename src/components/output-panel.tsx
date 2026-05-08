@@ -50,13 +50,6 @@ function EmptyState() {
         </h2>
       </div>
 
-      <div className="rounded-[1.6rem] border border-dashed border-white/12 bg-black/10 p-6">
-        <p className="text-sm leading-7 text-white/70">
-          Pick the problem, add quick context, then generate a practical plan with
-          copy-ready text-back and follow-up templates.
-        </p>
-      </div>
-
       <div className="grid gap-3">
         {[
           "What's leaking",

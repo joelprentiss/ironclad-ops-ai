@@ -4,7 +4,6 @@ import type {
   BusinessSizeDefinition,
   ProblemDefinition,
   ProblemId,
-  ScenarioPreset,
   TradeDefinition,
   TradeId,
 } from "@/lib/types";
@@ -213,53 +212,12 @@ const PROBLEM_DEFINITION_MAP = Object.fromEntries(
 
 export const DEFAULT_PROBLEM_ID: ProblemId = "missed_calls";
 
-export const STARTER_SCENARIOS: ScenarioPreset[] = [
-  {
-    label: "After-Hours Plumbing Calls",
-    problemId: "missed_calls",
-    tradeId: "plumbing",
-    value:
-      "We run a plumbing company and miss calls after 5 PM and on busy afternoons. New customers leave voicemails and nobody texts them back until the next day.",
-  },
-  {
-    label: "HVAC Web Leads",
-    problemId: "missed_calls",
-    tradeId: "hvac",
-    value:
-      "HVAC estimate requests come in from the website, but our office does not text or call back until the next day and the lead usually goes cold.",
-  },
-  {
-    label: "Electrician Office Handoff",
-    problemId: "missed_calls",
-    tradeId: "electrical",
-    value:
-      "Our electrician office gets busy, missed calls pile up, and nobody owns the callback list once the day gets hectic.",
-  },
-  {
-    label: "Cleaning Quote Follow-Up",
-    problemId: "missed_calls",
-    tradeId: "cleaning",
-    value:
-      "House cleaning inquiries get a quote request, but if the customer does not book right away, nobody follows up with a second text or call.",
-  },
-];
-
 export const LEGACY_AGENT_PROBLEM_MAP: Record<AgentId, ProblemId> = {
   ops: "missed_calls",
   sales: "missed_calls",
   marketing: "missed_calls",
   growth: "missed_calls",
 };
-
-export const FEATURED_PROBLEM_DEFINITIONS: ProblemDefinition[] = [
-  PROBLEM_DEFINITION_MAP.missed_calls,
-];
-
-export const FUTURE_AUDIT_LABELS = [
-  "Review request audit",
-  "Quote speed audit",
-  "Website conversion audit",
-];
 
 export const TRADE_FALLBACK_SCENARIOS: Record<TradeId, string> = {
   plumbing:

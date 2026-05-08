@@ -3,7 +3,6 @@ import type { FormEvent } from "react";
 import type {
   BusinessSize,
   BusinessSizeDefinition,
-  ScenarioPreset,
   TradeDefinition,
   TradeId,
 } from "@/lib/types";
@@ -19,9 +18,7 @@ type ScenarioInputProps = {
   onGoalChange: (value: string) => void;
   onSelectBusinessSize: (businessSize: BusinessSize) => void;
   onSelectTrade: (tradeId: TradeId) => void;
-  onSelectPreset: (preset: ScenarioPreset) => void;
   onSubmit: () => void;
-  presets: ScenarioPreset[];
   disabled: boolean;
   isSubmitting: boolean;
   helperText: string | null;
@@ -38,9 +35,7 @@ export function ScenarioInput({
   onGoalChange,
   onSelectBusinessSize,
   onSelectTrade,
-  onSelectPreset,
   onSubmit,
-  presets,
   disabled,
   isSubmitting,
   helperText,
@@ -146,20 +141,6 @@ export function ScenarioInput({
           placeholder="Example: Book more jobs from the calls and leads we already get."
         />
       </label>
-
-      <div className="mt-5 flex flex-wrap gap-3">
-        {presets.map((preset) => (
-          <button
-            key={preset.label}
-            type="button"
-            onClick={() => onSelectPreset(preset)}
-            disabled={disabled}
-            className="min-h-11 rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-white/70 transition hover:border-[#cf6b2d]/40 hover:bg-[#cf6b2d]/8 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
 
       <button
         type="submit"

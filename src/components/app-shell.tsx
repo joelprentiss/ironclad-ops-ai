@@ -3,7 +3,6 @@
 import { useRef, useState, useTransition } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { OutputPanel } from "@/components/output-panel";
-import { ProblemActions } from "@/components/problem-actions";
 import { ScenarioInput } from "@/components/scenario-input";
 import {
   BUSINESS_SIZE_OPTIONS,
@@ -11,8 +10,6 @@ import {
   DEFAULT_DIAGNOSTIC_GOAL,
   DEFAULT_PROBLEM_ID,
   DEFAULT_TRADE_ID,
-  FEATURED_PROBLEM_DEFINITIONS,
-  STARTER_SCENARIOS,
   TRADE_DEFINITIONS,
   getTradeDefinition,
   getTradeFallbackScenario,
@@ -21,8 +18,6 @@ import type {
   BusinessDiagnosticPayload,
   BusinessSize,
   DiagnosticResponse,
-  ProblemId,
-  ScenarioPreset,
   TradeId,
 } from "@/lib/types";
 
@@ -54,11 +49,10 @@ export function AppShell() {
   const [goal, setGoal] = useState(DEFAULT_DIAGNOSTIC_GOAL);
   const [selectedTrade, setSelectedTrade] = useState<TradeId>(DEFAULT_TRADE_ID);
   const [response, setResponse] = useState<DiagnosticResponse | null>(null);
-  const [activeProblem, setActiveProblem] = useState<ProblemId | null>(DEFAULT_PROBLEM_ID);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loadingLabel, setLoadingLabel] = useState<string | null>(null);
   const [helperText, setHelperText] = useState<string | null>(
-    "Start with the leak, then add a few details about how calls and leads move through the shop.",
+    "A few plain-English sentences is enough.",
   );
   const runTokenRef = useRef(0);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -109,36 +103,12 @@ export function AppShell() {
     );
   };
 
-  const handlePresetSelect = (preset: ScenarioPreset) => {
-    invalidatePendingResult();
-    setScenario(preset.value);
-
-    if (preset.problemId) {
-      setActiveProblem(preset.problemId);
-    }
-
-    if (preset.tradeId) {
-      setSelectedTrade(preset.tradeId);
-    }
-
-    setErrorMessage(null);
-    setHelperText("Example context loaded. Get the plan to see the fix and templates.");
-  };
-
-  const handleProblemSelect = (problemId: ProblemId) => {
-    invalidatePendingResult();
-
-    setActiveProblem(problemId);
-    setErrorMessage(null);
-    setHelperText("Good. Now add a few details about how calls and leads are handled.");
-  };
-
   const scrollToInput = () => {
     inputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleGenerateDiagnostic = async () => {
-    const problemId = activeProblem ?? DEFAULT_PROBLEM_ID;
+    const problemId = DEFAULT_PROBLEM_ID;
     const fallbackScenario = getTradeFallbackScenario(selectedTrade);
     const trimmedScenario = scenario.trim();
     const resolvedScenario = trimmedScenario || fallbackScenario;
@@ -146,7 +116,6 @@ export function AppShell() {
     const tradeDefinition = getTradeDefinition(selectedTrade);
     const token = ++runTokenRef.current;
 
-    setActiveProblem(problemId);
     setErrorMessage(null);
     setResponse(null);
     setLoadingLabel(`${tradeDefinition.label} plan`);
@@ -256,13 +225,6 @@ export function AppShell() {
           </header>
 
           <div ref={inputRef} className="mx-auto mt-7 max-w-3xl space-y-5 sm:mt-8 sm:space-y-6">
-            <ProblemActions
-              problems={FEATURED_PROBLEM_DEFINITIONS}
-              activeProblem={activeProblem}
-              disabled={isLoading}
-              onSelect={handleProblemSelect}
-            />
-
             <ScenarioInput
               value={scenario}
               goal={goal}
@@ -274,37 +236,13 @@ export function AppShell() {
               onGoalChange={handleGoalChange}
               onSelectBusinessSize={handleBusinessSizeSelect}
               onSelectTrade={handleTradeSelect}
-              onSelectPreset={handlePresetSelect}
               onSubmit={handleGenerateDiagnostic}
-              presets={STARTER_SCENARIOS}
               disabled={isLoading}
               isSubmitting={isLoading}
               helperText={helperText}
             />
 
             <section className="panel-surface rounded-[1.6rem] p-4 sm:p-5 lg:p-6">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.2rem] border border-white/8 bg-black/[0.18] px-4 py-4">
-                <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
-                    Result
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-white/74">
-                    {helperText ?? "Ready when you are."}
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full border px-3 py-1 text-[0.68rem] uppercase tracking-[0.22em] ${
-                    response
-                      ? "border-emerald-400/20 bg-emerald-400/8 text-emerald-200/75"
-                      : isLoading
-                        ? "border-[#cf6b2d]/40 bg-[#cf6b2d]/12 text-[#f1b585]"
-                        : "border-white/10 bg-white/[0.04] text-white/52"
-                  }`}
-                >
-                  {response ? "Next step ready" : isLoading ? "Building" : "Ready"}
-                </span>
-              </div>
-
               <OutputPanel
                 response={response}
                 scenario={scenario}
