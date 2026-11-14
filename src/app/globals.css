@@ -22,7 +22,7 @@ html {
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   color: var(--sand-100);
   font-family: var(--font-body), sans-serif;
